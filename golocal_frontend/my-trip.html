@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLocal - My Trips</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .trip-card-link {
+            color: inherit;
+            text-decoration: none;
+        }
+        .trip-card-link:hover .card {
+            border-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .trip-card { 
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Adventures 🗺️</h2>
+        <a href="create-trip.html" class="btn btn-primary">Plan a New Trip</a>
+    </div>
+
+    <div id="trips-container" class="row">
+        </div>
+
+    <div id="error-view" class="alert alert-danger" style="display: none;">
+        <h4>Access Denied</h4>
+        <p>You must be logged in to view your trips. Please <a href="login-test.html">login here</a>.</p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    var apiUrl = 'http://localhost/golocal_backend/public/api/trips/read';
+    var jwt = localStorage.getItem('jwt');
+
+    if (!jwt) {
+        $('#error-view').show();
+        return;
+    }
+
+    $.ajax({
+        url: apiUrl,
+        type: 'GET',
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+        },
+        
+        success: function(response) {
+            var tripsContainer = $('#trips-container');
+            
+            if (response.records && response.records.length > 0) {
+                $.each(response.records, function(index, trip) {
+                    // Each trip card is now wrapped in an <a> tag
+                    var tripCard = `
+                        <div class="col-md-6">
+                            <a href="trip-detail.html?id=${trip.trip_id}" class="trip-card-link">
+                                <div class="card trip-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${trip.trip_name}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">${trip.location}</h6>
+                                        <p class="card-text">
+                                            <strong>Starts:</strong> ${new Date(trip.start_datetime).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                    tripsContainer.append(tripCard);
+                });
+            } else {
+                tripsContainer.html('<div class="col"><div class="alert alert-info">You haven\'t planned any trips yet. Why not start a new adventure?</div></div>');
+            }
+        },
+
+        error: function(jqXHR) {
+            $('#error-view').show();
+        }
+    });
+});
+</script>
+
+</body>
+</html>

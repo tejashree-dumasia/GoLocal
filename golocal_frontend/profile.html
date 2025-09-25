@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLocal - My Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container { max-width: 600px; }
+        .profile-card { padding: 2rem; }
+        .error-message { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div id="profile-view" class="card profile-card" style="display: none;">
+        <h2 class="card-title mb-4">My Profile</h2>
+        <dl class="row">
+            <dt class="col-sm-3">User ID:</dt>
+            <dd class="col-sm-9" id="user-id"></dd>
+
+            <dt class="col-sm-3">Username:</dt>
+            <dd class="col-sm-9" id="user-username"></dd>
+
+            <dt class="col-sm-3">Email:</dt>
+            <dd class="col-sm-9" id="user-email"></dd>
+        </dl>
+        <button id="logout-button" class="btn btn-danger mt-3">Logout</button>
+    </div>
+
+    <div id="error-view" class="alert alert-danger error-message" style="display: none;">
+        <h4>Access Denied</h4>
+        <p>You must be logged in to view this page. Please <a href="login-test.html">login here</a>.</p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    // --- IMPORTANT: UPDATE THIS URL ---
+    var apiUrl = 'http://localhost/golocal_backend/public/api/users/read_single';
+    
+    // 1. Get the JWT from localStorage
+    var jwt = localStorage.getItem('jwt');
+
+    if (!jwt) {
+        // If no JWT is found, show the error message and hide the profile
+        $('#error-view').show();
+        return; // Stop the script
+    }
+
+    // 2. Make an authenticated AJAX request
+    $.ajax({
+        url: apiUrl,
+        type: 'GET',
+        beforeSend: function(xhr) {
+            // Add the JWT to the request header
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+        },
+        
+        // --- SUCCESS HANDLER ---
+        success: function(response) {
+            // Populate the profile card with user data
+            $('#user-id').text(response.user_id);
+            $('#user-username').text(response.username);
+            $('#user-email').text(response.email);
+            
+            // Show the profile card
+            $('#profile-view').show();
+        },
+
+        // --- ERROR HANDLER ---
+        error: function(jqXHR, textStatus, errorThrown) {
+            // If the token is invalid or expired, the server will send a 401 error.
+            $('#error-view').show();
+        }
+    });
+
+    // Handle logout
+    $('#logout-button').on('click', function() {
+        localStorage.removeItem('jwt');
+        window.location.href = 'login-test.html';
+    });
+});
+</script>
+
+</body>
+</html>

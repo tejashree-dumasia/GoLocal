@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLocal - Create a New Trip</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container { max-width: 600px; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>Plan a New Adventure 🗺️</h2>
+    <p>Fill out the details below to create your next micro-trip.</p>
+
+    <form id="create-trip-form" class="mt-4">
+        <div class="form-group">
+            <label for="trip_name">Trip Name</label>
+            <input type="text" class="form-control" id="trip_name" placeholder="e.g., Weekend trek to Sinhagad" required>
+        </div>
+        <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" class="form-control" id="location" placeholder="e.g., Pune, Maharashtra" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" rows="3" placeholder="Add a short description of the plan..."></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="start_datetime">Start Date & Time</label>
+                <input type="datetime-local" class="form-control" id="start_datetime" required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="end_datetime">End Date & Time</label>
+                <input type="datetime-local" class="form-control" id="end_datetime" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="estimated_cost">Estimated Cost (per person)</label>
+            <input type="number" class="form-control" id="estimated_cost" placeholder="e.g., 500">
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Create Trip</button>
+    </form>
+
+    <div id="response-message" class="alert mt-4" style="display: none;"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Listen for the form submission
+    $('#create-trip-form').on('submit', function(event) {
+        event.preventDefault();
+
+        var apiUrl = 'http://localhost/golocal_backend/public/api/trips/create';
+        var jwt = localStorage.getItem('jwt');
+
+        // If no JWT is found, the user is not logged in
+        if (!jwt) {
+            $('#response-message')
+                .text('Access Denied. You must be logged in to create a trip.')
+                .removeClass('alert-success').addClass('alert-danger')
+                .show();
+            return;
+        }
+
+        // Get the data from the form fields
+        var tripData = {
+            trip_name: $('#trip_name').val(),
+            location: $('#location').val(),
+            description: $('#description').val(),
+            start_datetime: $('#start_datetime').val(),
+            end_datetime: $('#end_datetime').val(),
+            estimated_cost: $('#estimated_cost').val()
+        };
+
+        // Make the authenticated AJAX POST request
+        $.ajax({
+            url: apiUrl,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(tripData),
+            beforeSend: function(xhr) {
+                // Add the JWT to the request header
+                xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+            },
+            
+            // --- SUCCESS HANDLER ---
+            success: function(response) {
+                $('#response-message')
+                    .text(response.message + ' Redirecting...')
+                    .removeClass('alert-danger').addClass('alert-success')
+                    .show();
+                
+                // Redirect to a "my trips" page after a short delay
+                setTimeout(function() {
+                    // window.location.href = 'my-trips.html'; // Uncomment when you create this page
+                }, 2000);
+            },
+
+            // --- ERROR HANDLER ---
+            error: function(jqXHR, textStatus, errorThrown) {
+                var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'An error occurred. Please try again.';
+                $('#response-message')
+                    .text(errorMessage)
+                    .removeClass('alert-success').addClass('alert-danger')
+                    .show();
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>

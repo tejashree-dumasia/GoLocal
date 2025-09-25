@@ -1,0 +1,19 @@
+{
+    "name": "tejashree/golocal_backend",
+    "description": "The REST API for the Go-local micro-adventure planner.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tejashree Vijay Dumasia",
+            "email": "tej.dumasia@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "GoLocal\\": "core/"
+        }
+    }
+}

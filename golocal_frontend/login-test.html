@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoLocal API Test - Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container { max-width: 500px; }
+        .token-box { word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>GoLocal - User Login</h2>
+    <p>A simple form to test the login endpoint.</p>
+
+    <form id="login-form" class="mt-4">
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-success">Login</button>
+    </form>
+
+    <div id="response-message" class="alert mt-4" style="display: none;"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Listen for the form submission
+    $('#login-form').on('submit', function(event) {
+        // Prevent the default form submission (which reloads the page)
+        event.preventDefault();
+
+        // --- IMPORTANT: UPDATE THIS URL ---
+        // Change this to the actual URL of your running backend API
+        var apiUrl = 'http://localhost/golocal_backend/public/api/users/login';
+
+        // Get the data from the form fields
+        var formData = {
+            email: $('#email').val(),
+            password: $('#password').val()
+        };
+
+        // Make the AJAX POST request to the API
+        $.ajax({
+            url: apiUrl,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData), // Convert JS object to JSON string
+            
+            // --- SUCCESS HANDLER ---
+            success: function(response) {
+                localStorage.setItem('jwt', response.jwt);
+                var messageDiv = $('#response-message');
+                var messageText = '<strong>' + response.message + '</strong><br><br>';
+                messageText += '<div class="token-box"><strong>JWT:</strong> ' + response.jwt + '</div>';
+
+                messageDiv.html(messageText);
+                messageDiv.removeClass('alert-danger').addClass('alert-success');
+                messageDiv.show();
+            },
+
+            // --- ERROR HANDLER ---
+            error: function(jqXHR, textStatus, errorThrown) {
+                var messageDiv = $('#response-message');
+                // Try to get the error message from the API's JSON response
+                var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'An unknown error occurred.';
+                
+                messageDiv.text(errorMessage);
+                messageDiv.removeClass('alert-success').addClass('alert-danger');
+                messageDiv.show();
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
