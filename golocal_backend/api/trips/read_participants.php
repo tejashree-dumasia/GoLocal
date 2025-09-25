@@ -30,14 +30,16 @@ if ($jwt) {
 
         // Prepare the query to get all participants for a given trip
         $query = "SELECT
-                    tp.user_id,
-                    tp.guest_name,
-                    tp.guest_email,
-                    tp.status
-                  FROM
-                    trip_participants tp
-                  WHERE
-                    tp.trip_id = :trip_id";
+            tp.participant_id,
+            tp.user_id,
+            tp.guest_name,
+            tp.guest_email,
+            tp.status,
+            tp.is_co_admin
+        FROM
+            trip_participants tp
+        WHERE
+            tp.trip_id = :trip_id";
         
         $stmt = $db->prepare($query);
         
@@ -55,10 +57,12 @@ if ($jwt) {
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 extract($row);
                 $participant_item = array(
+                    "participant_id" => $participant_id,
                     "user_id" => $user_id,
                     "guest_name" => $guest_name,
                     "guest_email" => $guest_email,
-                    "status" => $status
+                    "status" => $status,
+                    "is_co_admin" => $is_co_admin
                 );
                 array_push($participants_arr["records"], $participant_item);
             }

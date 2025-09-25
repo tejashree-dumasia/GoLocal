@@ -30,10 +30,10 @@
     <div class="mt-5">
         <h4>Participants</h4>
         <ul id="participants-list" class="list-group">
-            </ul>
+        </ul>
     </div>
 
-    <div id="add-participant-section" class="card mt-4">
+    <div id="add-participant-section" class="card mt-4" style="display: none;">
         <div class="card-header">
             <h5>Add Participants</h5>
         </div>
@@ -54,29 +54,69 @@
         </div>
     </div>
 
-    <div id="error-view" class="alert alert-danger mt-4" style="display: none;"></div>
+
+        <div id="error-view" class="alert alert-danger mt-4" style="display: none;"></div>
+
+        <!-- Edit Participant Modal -->
+        <div class="modal fade" id="editParticipantModal" tabindex="-1" role="dialog" aria-labelledby="editParticipantModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form id="edit-participant-form" class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editParticipantModalLabel">Edit Participant</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="edit-participant-id">
+                        <div class="form-group">
+                            <label for="edit-participant-name">Name</label>
+                            <input type="text" class="form-control" id="edit-participant-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-participant-email">Email</label>
+                            <input type="email" class="form-control" id="edit-participant-email">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="edit-participant-coadmin"> Co-Admin
+                            </label>
+                        </div>
+                        <div id="edit-response" class="mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
 $(document).ready(function() {
     // --- SETUP ---
     var jwt = localStorage.getItem('jwt');
-    
-    // Get the trip ID from the URL query string
     var urlParams = new URLSearchParams(window.location.search);
     var tripId = urlParams.get('id');
+    var isAdmin = false; // This will be set after fetching trip details
 
-    // API Endpoints
-    var tripDetailApiUrl = `http://localhost/golocal_backend/public/api/trips/read_single?id=${tripId}`;
-    var participantsApiUrl = `http://localhost/golocal_backend/public/api/trips/read_participants?id=${tripId}`;
-    var inviteApiUrl = 'http://localhost/golocal_backend/public/api/trips/invite';
-
-    // If no JWT or tripId, show an error
+    // --- UPDATED & CONSISTENT API Endpoints ---
+    var tripDetailApiUrl = `http://golocal/public/api/trips/read_single?id=${tripId}`;
+    var participantsApiUrl = `http://golocal/public/api/trips/read_participants?id=${tripId}`;
+    var inviteApiUrl = `http://golocal/public/api/trips/invite`;
+    var updateApiUrl = `http://golocal/public/api/trips/update_participant`;
+    var deleteApiUrl = `http://golocal/public/api/trips/delete_participant`;
+    
+    // If no JWT or tripId, show an error and stop
     if (!jwt || !tripId) {
         $('#error-view').text('Access Denied or invalid trip ID.').show();
-        $('#trip-details-container').hide();
+        $('.container > div:not(#error-view)').hide(); // Hide all other sections
         return;
     }
 
@@ -93,12 +133,13 @@ $(document).ready(function() {
                 $('#trip-start').text(new Date(trip.start_datetime).toLocaleString('en-IN'));
                 $('#trip-end').text(new Date(trip.end_datetime).toLocaleString('en-IN'));
                 $('#trip-cost').text(trip.estimated_cost || 'N/A');
-
-                if (trip.is_admin) {
+                
+                isAdmin = trip.is_admin; // Store admin status
+                if (isAdmin) {
                     $('#add-participant-section').show();
-                } else {
-                    $('#add-participant-section').hide();
                 }
+
+                fetchParticipants(); // Fetch participants after we know the admin status
             },
             error: function(jqXHR) {
                 var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not load trip details.";
@@ -120,7 +161,25 @@ $(document).ready(function() {
                     $.each(response.records, function(i, participant) {
                         var participantName = participant.guest_name || 'Unnamed Participant';
                         var participantDetail = participant.guest_email || `Registered User (ID: ${participant.user_id})`;
-                        list.append(`<li class="list-group-item">${participantName} <small class="text-muted float-right">${participantDetail}</small></li>`);
+                        var coAdminLabel = participant.is_co_admin == 1 ? '<span class="badge badge-info ml-2">Co-Admin</span>' : '';
+                        var adminControls = '';
+                        if (isAdmin) {
+                            adminControls = `
+                                <button class="btn btn-sm btn-outline-secondary edit-btn ml-2"
+                                    data-id="${participant.participant_id}"
+                                    data-name="${participant.guest_name}"
+                                    data-email="${participant.guest_email || ''}"
+                                    data-coadmin="${participant.is_co_admin == 1 ? '1' : '0'}">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-btn ml-2" data-id="${participant.participant_id}">Delete</button>
+                            `;
+                        }
+                        list.append(`<li class="list-group-item">
+                            ${participantName} <small class="text-muted">(${participant.status})</small> ${coAdminLabel} <br>
+                            <small>${participantDetail}</small>
+                            ${adminControls}
+                        </li>`);
                     });
                 } else {
                     list.append('<li class="list-group-item">No participants have been added yet.</li>');
@@ -129,6 +188,76 @@ $(document).ready(function() {
         });
     }
 
+    // --- EVENT HANDLER FOR DELETING PARTICIPANTS ---
+    $(document).on('click', '.delete-btn', function() {
+        if (!confirm('Are you sure you want to remove this participant?')) return;
+
+        var participantId = $(this).data('id');
+        var requestData = {
+            jwt: jwt,
+            participant_id: participantId
+        };
+        $.ajax({
+            url: deleteApiUrl,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                alert(response.message);
+                fetchParticipants(); // Refresh the list
+            },
+            error: function(jqXHR) {
+                var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not remove participant.";
+                alert(errorMsg);
+            }
+        });
+    });
+
+    // --- EVENT HANDLER FOR EDITING PARTICIPANTS ---
+    $(document).on('click', '.edit-btn', function() {
+        $('#edit-participant-id').val($(this).data('id'));
+        $('#edit-participant-name').val($(this).data('name'));
+        $('#edit-participant-email').val($(this).data('email'));
+        $('#edit-participant-coadmin').prop('checked', $(this).data('coadmin') == '1');
+        $('#edit-response').empty();
+        $('#editParticipantModal').modal('show');
+    });
+
+    // --- EVENT HANDLER FOR SUBMITTING EDIT PARTICIPANT FORM ---
+    $('#edit-participant-form').on('submit', function(e) {
+        e.preventDefault();
+        var participantId = $('#edit-participant-id').val();
+        var name = $('#edit-participant-name').val();
+        var email = $('#edit-participant-email').val();
+        var isCoAdmin = $('#edit-participant-coadmin').is(':checked') ? 1 : 0;
+
+        var updateData = {
+            jwt: jwt,
+            participant_id: participantId,
+            name: name,
+            email: email,
+            is_co_admin: isCoAdmin
+        };
+
+        $.ajax({
+            url: updateApiUrl,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(updateData),
+            success: function(response) {
+                $('#edit-response').html('<div class="alert alert-success">' + response.message + '</div>');
+                setTimeout(function() {
+                    $('#editParticipantModal').modal('hide');
+                    fetchParticipants();
+                }, 1000);
+            },
+            error: function(jqXHR) {
+                var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not update participant.";
+                $('#edit-response').html('<div class="alert alert-danger">' + errorMsg + '</div>');
+            }
+        });
+    });
+    
     // --- EVENT HANDLER FOR ADDING PARTICIPANTS ---
     $('#add-participant-form').on('submit', function(event) {
         event.preventDefault();
@@ -159,7 +288,6 @@ $(document).ready(function() {
 
     // --- INITIAL PAGE LOAD ---
     fetchTripDetails();
-    fetchParticipants();
 });
 </script>
 

@@ -1,0 +1,26 @@
+# # FOLDERS #
+
+# Composer dependencies - This is the most important rule for your backend
+/backend/vendor/
+
+# IDE & Editor specific files
+.vscode/
+.idea/
+
+# Operating System generated files
+.DS_Store
+Thumbs.db
+
+
+# # FILES #
+
+# Ignore sensitive configuration files in the backend
+/backend/config/*
+
+# ...but DO NOT ignore the template files so others know what to create
+!/backend/config/database.template.php
+!/backend/config/core.template.php
+
+# Log files
+*.log
+/logs/

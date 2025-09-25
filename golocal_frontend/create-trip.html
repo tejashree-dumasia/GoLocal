@@ -56,7 +56,7 @@ $(document).ready(function() {
     $('#create-trip-form').on('submit', function(event) {
         event.preventDefault();
 
-        var apiUrl = 'http://localhost/golocal_backend/public/api/trips/create';
+        var apiUrl = 'http://golocal/public/api/trips/create';
         var jwt = localStorage.getItem('jwt');
 
         // If no JWT is found, the user is not logged in

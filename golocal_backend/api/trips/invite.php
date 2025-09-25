@@ -20,7 +20,10 @@ try {
     include_once __DIR__ . '/../../config/core.php';
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
     $inviter_id = $decoded->data->id;
-    
+
+    // Debug output for troubleshooting
+    error_log('invite.php debug: trip_id=' . $trip_id . ', inviter_id=' . $inviter_id);
+
     $database = new Database();
     $db = $database->getConnection();
 
@@ -35,6 +38,7 @@ try {
     $stmt->execute();
 
     if ($stmt->rowCount() == 0) {
+        error_log('invite.php debug: admin check failed for trip_id=' . $trip_id . ', inviter_id=' . $inviter_id);
         http_response_code(403);
         echo json_encode(array("message" => "Access denied. You are not the admin or co-admin of this trip."));
         return;
