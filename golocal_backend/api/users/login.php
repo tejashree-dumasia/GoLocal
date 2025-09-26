@@ -1,7 +1,4 @@
 <?php
-// Note: This file is called by `public/index.php`, which handles headers and core includes.
-// We still need to include the JWT library files.
-require_once __DIR__ . '/../../vendor/autoload.php';
 use Firebase\JWT\JWT;
 
 // Get database connection

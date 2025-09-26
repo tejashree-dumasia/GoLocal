@@ -34,8 +34,7 @@ if ($jwt) {
             tp.user_id,
             tp.guest_name,
             tp.guest_email,
-            tp.status,
-            tp.is_co_admin
+            tp.status
         FROM
             trip_participants tp
         WHERE
@@ -61,8 +60,7 @@ if ($jwt) {
                     "user_id" => $user_id,
                     "guest_name" => $guest_name,
                     "guest_email" => $guest_email,
-                    "status" => $status,
-                    "is_co_admin" => $is_co_admin
+                    "status" => $status
                 );
                 array_push($participants_arr["records"], $participant_item);
             }

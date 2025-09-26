@@ -107,17 +107,23 @@ $(document).ready(function() {
     var isAdmin = false; // This will be set after fetching trip details
 
     // --- UPDATED & CONSISTENT API Endpoints ---
-    var tripDetailApiUrl = `http://golocal/public/api/trips/read_single?id=${tripId}`;
-    var participantsApiUrl = `http://golocal/public/api/trips/read_participants?id=${tripId}`;
-    var inviteApiUrl = `http://golocal/public/api/trips/invite`;
-    var updateApiUrl = `http://golocal/public/api/trips/update_participant`;
-    var deleteApiUrl = `http://golocal/public/api/trips/delete_participant`;
+    var tripDetailApiUrl = `http://api.golocal.local/api/trips/read_single?id=${tripId}`;
+    var participantsApiUrl = `http://api.golocal.local/api/trips/read_participants?id=${tripId}`;
+    var inviteApiUrl = `http://api.golocal.local/api/trips/invite`;
+    var updateApiUrl = `http://api.golocal.local/api/trips/update_participant`;
+    var deleteApiUrl = `http://api.golocal.local/api/trips/delete_participant`;
     
     // If no JWT or tripId, show an error and stop
     if (!jwt || !tripId) {
-        $('#error-view').text('Access Denied or invalid trip ID.').show();
+        showError('Access Denied or invalid trip ID.');
         $('.container > div:not(#error-view)').hide(); // Hide all other sections
         return;
+    }
+
+    // --- ERROR HANDLING FUNCTION ---
+    function showError(message) {
+        $('#error-view').text(message).show();
+        setTimeout(function() { $('#error-view').fadeOut(); }, 2000);
     }
 
     // --- FUNCTION TO FETCH TRIP DETAILS ---
@@ -133,17 +139,20 @@ $(document).ready(function() {
                 $('#trip-start').text(new Date(trip.start_datetime).toLocaleString('en-IN'));
                 $('#trip-end').text(new Date(trip.end_datetime).toLocaleString('en-IN'));
                 $('#trip-cost').text(trip.estimated_cost || 'N/A');
-                
-                isAdmin = trip.is_admin; // Store admin status
+
+                // Defensive: check is_admin is boolean or 0/1
+                isAdmin = (trip.is_admin === true || trip.is_admin === 1 || trip.is_admin === '1');
                 if (isAdmin) {
                     $('#add-participant-section').show();
+                } else {
+                    $('#add-participant-section').hide();
                 }
 
                 fetchParticipants(); // Fetch participants after we know the admin status
             },
             error: function(jqXHR) {
                 var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not load trip details.";
-                $('#error-view').text(errorMsg).show();
+                showError(errorMsg);
             }
         });
     }
@@ -184,6 +193,12 @@ $(document).ready(function() {
                 } else {
                     list.append('<li class="list-group-item">No participants have been added yet.</li>');
                 }
+            },
+            error: function(jqXHR) {
+                var errorMsg = jqXHR.responseJSON && jqXHR.responseJSON.error
+                    ? jqXHR.responseJSON.error
+                    : (jqXHR.responseJSON && jqXHR.responseJSON.message ? jqXHR.responseJSON.message : 'Could not load participants.');
+                showError(errorMsg);
             }
         });
     }
@@ -203,12 +218,12 @@ $(document).ready(function() {
             contentType: 'application/json',
             data: JSON.stringify(requestData),
             success: function(response) {
-                alert(response.message);
+                showError(response.message); // Use error-view for all messages
                 fetchParticipants(); // Refresh the list
             },
             error: function(jqXHR) {
                 var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not remove participant.";
-                alert(errorMsg);
+                showError(errorMsg);
             }
         });
     });
@@ -254,6 +269,7 @@ $(document).ready(function() {
             error: function(jqXHR) {
                 var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : "Could not update participant.";
                 $('#edit-response').html('<div class="alert alert-danger">' + errorMsg + '</div>');
+                showError(errorMsg);
             }
         });
     });
@@ -261,7 +277,7 @@ $(document).ready(function() {
     // --- EVENT HANDLER FOR ADDING PARTICIPANTS ---
     $('#add-participant-form').on('submit', function(event) {
         event.preventDefault();
-        
+
         var inviteData = {
             jwt: jwt,
             trip_id: tripId,
@@ -282,6 +298,7 @@ $(document).ready(function() {
             error: function(jqXHR) {
                 var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'An error occurred.';
                 $('#invite-response').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                showError(errorMessage);
             }
         });
     });
