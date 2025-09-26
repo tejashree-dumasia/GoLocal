@@ -1,9 +1,4 @@
 <?php
-// This endpoint will be called by 'public/index.php', which already sets headers.
-// We still need to include our configuration and model files.
-include_once __DIR__ . '/../../config/database.php';
-include_once __DIR__ . '/../../core/user.php';
-
 // Get database connection
 $database = new Database();
 $db = $database->getConnection();

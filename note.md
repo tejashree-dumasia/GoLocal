@@ -6,12 +6,12 @@
 
     ```xml
     <VirtualHost *:80>
-    DocumentRoot "path\to\GoLocal\golocal-backend"
-    ServerName devlog.local
-    <Directory "path\to\GoLocal\golocal-backend">
-        AllowOverride All
-        Require all granted
-    </Directory>
+        DocumentRoot "path\to\GoLocal\golocal-backend"
+        ServerName api.golocal.local
+        <Directory "path\to\GoLocal\golocal-backend">
+            AllowOverride All
+            Require all granted
+        </Directory>
     </VirtualHost>
     ```
 
@@ -22,27 +22,54 @@
 
 3. Add entry to systems hosts file `C:\Windows\System32\drivers\etc\hosts`
 
-    `127.0.0.1 golocal`
+    `127.0.0.1 api.golocal.local`
 
-## which file, whai do
+## which file, what do
 
 ### [README.md](/README.md)
 
+Description of the project
+
 ### [note.md](/note.md)
+
+Things to remember about this project
 
 ### [LICENSE](/LICENSE)
 
+MIT license
+
 ### [db.sql](/db.sql)
+
+Project schema definition
 
 ### [.gitignore](/.gitignore)
 
+Don't commit these on git
+
 ### [frontend/index.html](/golocal_frontend/index.html)
+
+- Registration page
+- Works with endpoint `http://golocal/public/api/users/register`
+    - request with username, name, password
+    - responsed to message
 
 ### [frontend/login-test.html](/golocal_frontend/login-test.html)
 
+- Login Page
+- Works with endpoint `http://golocal/public/api/users/login`
+    - request with email, password
+    - respond with jwt token which is saved in localstorage
+
 ### [frontend/profile.html](/golocal_frontend/profile.html)
 
+- Profile page of user
+- Works with endpoint 'http://golocal/public/api/users/read_single'
+    - request with jwt from the localStorage
+    - response with user details
+
 ### [frontend/create-trip.html](/golocal_frontend/create-trip.html)
+
+- 
 
 ### [frontend/my-trip.html](/golocal_frontend/my-trip.html)
 

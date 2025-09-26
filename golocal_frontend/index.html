@@ -42,9 +42,8 @@ $(document).ready(function() {
         // Prevent the default form submission (which reloads the page)
         event.preventDefault();
 
-        // --- IMPORTANT: UPDATE THIS URL ---
-        // Change this to the actual URL of your running backend API
-        var apiUrl = 'http://golocal/public/api/users/register';
+        // Define the API endpoint URL
+        var apiUrl = 'http://api.golocal.local/api/users/register';
 
         // Get the data from the form fields
         var formData = {
@@ -71,9 +70,22 @@ $(document).ready(function() {
             // --- ERROR HANDLER ---
             error: function(jqXHR, textStatus, errorThrown) {
                 var messageDiv = $('#response-message');
-                // Try to get the error message from the API's JSON response
-                var errorMessage = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'An unknown error occurred.';
-                
+                var errorMessage = '';
+                if (jqXHR.status === 0) {
+                    errorMessage = 'Network error: Could not connect to the server. Is the backend running?';
+                } else if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                    errorMessage = jqXHR.responseJSON.message;
+                } else if (jqXHR.responseText) {
+                    try {
+                        var json = JSON.parse(jqXHR.responseText);
+                        errorMessage = json.message || jqXHR.responseText;
+                    } catch (e) {
+                        errorMessage = jqXHR.responseText;
+                    }
+                } else {
+                    errorMessage = 'An unknown error occurred.';
+                }
+                errorMessage = 'Error (' + jqXHR.status + '): ' + errorMessage;
                 messageDiv.text(errorMessage);
                 messageDiv.removeClass('alert-success').addClass('alert-danger');
                 messageDiv.show();

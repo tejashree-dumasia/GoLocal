@@ -6,6 +6,7 @@
 # IDE & Editor specific files
 .vscode/
 .idea/
+.github
 
 # Operating System generated files
 .DS_Store
