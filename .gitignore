@@ -11,11 +11,10 @@
 .DS_Store
 Thumbs.db
 
-
 # # FILES #
 
-# Ignore sensitive configuration files in the backend
-/backend/config/*
+# Ignore sensitive configuration files in the backend in production
+# /backend/config/*
 
 # ...but DO NOT ignore the template files so others know what to create
 !/backend/config/database.template.php
