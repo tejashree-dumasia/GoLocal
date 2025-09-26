@@ -1,4 +1,5 @@
--- SQL Schema for Micro Adventure Trip Planner
+-- SQL Schema for GoLocal - A Micro-Adventure Planning App
+-- This schema defines the necessary tables and relationships to support
 -- -----------------------------------------------------
 
 -- Drop tables in reverse order of creation to avoid foreign key errors
@@ -46,9 +47,9 @@ CREATE TABLE `trips` (
 CREATE TABLE `trip_participants` (
   `participant_id` INT AUTO_INCREMENT PRIMARY KEY,
   `trip_id` INT NOT NULL,
-  `user_id` INT NULL, -- << Now allows NULL
-  `guest_name` VARCHAR(255) NULL, -- << To store the name
-  `guest_email` VARCHAR(255) NULL, -- << To store the email
+  `user_id` INT NULL,
+  `guest_name` VARCHAR(255) NULL,
+  `guest_email` VARCHAR(255) NULL,
   `status` ENUM('invited', 'accepted', 'declined', 'completed', 'did_not_attend') NOT NULL DEFAULT 'invited',
   `joined_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`trip_id`) REFERENCES `trips`(`trip_id`) ON DELETE CASCADE,
