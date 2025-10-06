@@ -51,9 +51,17 @@ if ($jwt) {
 
             // Attempt to create the trip
             if ($trip->create()) {
+                // Get the last inserted trip_id
+                $trip_id = $db->lastInsertId();
+                // Add the creator as a participant (status 'accepted')
+                $participant_query = "INSERT INTO trip_participants (trip_id, user_id, status) VALUES (:trip_id, :user_id, 'accepted')";
+                $stmt_participant = $db->prepare($participant_query);
+                $stmt_participant->bindParam(':trip_id', $trip_id);
+                $stmt_participant->bindParam(':user_id', $logged_in_user_id);
+                $stmt_participant->execute();
                 // Set response code - 201 Created
                 http_response_code(201);
-                echo json_encode(array("message" => "Trip was successfully created."));
+                echo json_encode(array("message" => "Trip was successfully created and you have been added as a participant."));
             } else {
                 // Set response code - 503 Service Unavailable
                 http_response_code(503);

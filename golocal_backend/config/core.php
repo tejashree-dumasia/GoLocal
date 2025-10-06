@@ -12,6 +12,6 @@ $issuer_claim = "http://localhost/golocal"; // The issuer of the token
 $audience_claim = "http://localhost";       // The audience of the token
 $issuedat_claim = time();                   // Issued at timestamp
 $notbefore_claim = $issuedat_claim;         // Token is valid from this timestamp
-$expire_claim = $issuedat_claim + 3600;     // Token expires in 1 hour (3600 seconds)
+$expire_claim = $issuedat_claim + (3600 * 12);     // Token expires in 1 hour (3600 seconds)
 
 ?>

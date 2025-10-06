@@ -6,23 +6,19 @@ use Firebase\JWT\Key;
 $data = json_decode(file_get_contents("php://input"));
 $jwt = isset($data->jwt) ? $data->jwt : "";
 $trip_id = isset($data->trip_id) ? $data->trip_id : "";
-$invitee_email = isset($data->email) ? trim($data->email) : "";
-$invitee_name = isset($data->name) ? trim($data->name) : "";
 
-// Validate JWT and that we have at least an email or a name
-if (!$jwt || !$trip_id || (empty($invitee_email) && empty($invitee_name))) {
+$invitee_email = isset($data->email) ? trim($data->email) : "";
+
+// Validate JWT and that we have an email
+if (!$jwt || !$trip_id || empty($invitee_email)) {
     http_response_code(400);
-    echo json_encode(array("message" => "Incomplete data."));
+    echo json_encode(array("message" => "Incomplete data. Email is required."));
     return;
 }
 
 try {
-    include_once __DIR__ . '/../../config/core.php';
     $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
     $inviter_id = $decoded->data->id;
-
-    // Debug output for troubleshooting
-    error_log('invite.php debug: trip_id=' . $trip_id . ', inviter_id=' . $inviter_id);
 
     $database = new Database();
     $db = $database->getConnection();
@@ -38,50 +34,38 @@ try {
     $stmt->execute();
 
     if ($stmt->rowCount() == 0) {
-        error_log('invite.php debug: admin check failed for trip_id=' . $trip_id . ', inviter_id=' . $inviter_id);
         http_response_code(403);
         echo json_encode(array("message" => "Access denied. You are not the admin or co-admin of this trip."));
         return;
     }
     
     // --- Logic to Add Participant ---
-    $user_id_to_add = null;
-    
-    // Scenario 1 & 2: An email is provided
-    if (!empty($invitee_email)) {
-        // Check if this email belongs to a registered user
-        $query = "SELECT user_id, username FROM users WHERE email = :email";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(':email', $invitee_email);
-        $stmt->execute();
-        $user_row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user_row) {
-            // User exists, we will add them by their user_id
-            $user_id_to_add = $user_row['user_id'];
-            $invitee_name = $user_row['username']; // Use their registered username
-        }
-        
-        // If user does not exist, they will be added as a guest with their email.
-        // The $user_id_to_add will remain null.
+    // Only allow inviting registered users
+    $query = "SELECT user_id, username FROM users WHERE email = :email";
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':email', $invitee_email);
+    $stmt->execute();
+    $user_row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user_row) {
+        http_response_code(404);
+        echo json_encode(array("message" => "No user found with this email. Only registered users can be invited."));
+        return;
     }
 
-    // Insert into participants table
-    $query = "INSERT INTO trip_participants (trip_id, user_id, guest_name, guest_email, status) 
-              VALUES (:trip_id, :user_id, :guest_name, :guest_email, 'invited')";
+    $user_id_to_add = $user_row['user_id'];
+
+    // Insert into participants table (only user_id, no guest fields)
+    $query = "INSERT INTO trip_participants (trip_id, user_id, status) 
+              VALUES (:trip_id, :user_id, 'invited')";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':trip_id', $trip_id);
     $stmt->bindParam(':user_id', $user_id_to_add);
-    $stmt->bindParam(':guest_name', $invitee_name);
-    
-    // Only bind email if it was provided and the user wasn't found
-    $guest_email_to_add = $user_id_to_add ? null : $invitee_email;
-    $stmt->bindParam(':guest_email', $guest_email_to_add);
 
     if ($stmt->execute()) {
         http_response_code(200);
         echo json_encode(array("message" => "Participant successfully added."));
-        // You could add logic here to send an email if $guest_email_to_add is not null
     } else {
         http_response_code(409);
         echo json_encode(array("message" => "Unable to add participant. They may already be in the trip."));

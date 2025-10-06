@@ -50,30 +50,66 @@ Don't commit these on git
 
 - Registration page
 - Works with endpoint `http://golocal/public/api/users/register`
-    - request with username, name, password
-    - responsed to message
+  - request with username, name, password
+  - responsed to message
 
 ### [frontend/login-test.html](/golocal_frontend/login-test.html)
 
 - Login Page
 - Works with endpoint `http://golocal/public/api/users/login`
-    - request with email, password
-    - respond with jwt token which is saved in localstorage
+  - request with email, password
+  - respond with jwt token which is saved in localstorage
 
 ### [frontend/profile.html](/golocal_frontend/profile.html)
 
 - Profile page of user
-- Works with endpoint 'http://golocal/public/api/users/read_single'
-    - request with jwt from the localStorage
-    - response with user details
+- Works with endpoint `http://golocal/public/api/users/read_single`
+  - request with jwt from the localStorage
+  - response with user details
 
 ### [frontend/create-trip.html](/golocal_frontend/create-trip.html)
 
-- 
+-
 
 ### [frontend/my-trip.html](/golocal_frontend/my-trip.html)
 
+
 ### [frontend/trip-detail.html](/golocal_frontend/trip-detail.html)
+
+Displays the details of a specific trip, including trip name, location, description, dates, estimated cost, and a list of participants. Shows which user is admin or co-admin, and allows the admin to:
+
+- Invite registered users to the trip by email
+- Remove participants (except themselves)
+- Assign a single co-admin (and change co-admin)
+
+Only users who are participants (admin, co-admin, or invited/accepted) can view this page's data. The page uses JWT authentication and enforces privacy via backend checks. All participant names are shown (not just user IDs), and admin/co-admin are visually indicated.
+
+#### APIs used by trip-detail.html
+
+- **GET /api/trips/read_single?id=TRIP_ID**
+  - Request: JWT in Authorization header, trip_id as query param
+  - Response: Trip details (trip_id, trip_name, location, description, estimated_cost, start_datetime, end_datetime, admin_id, co_admin_id, admin_name, is_admin)
+  - Privacy: Only accessible to participants (admin, co-admin, or invited/accepted users)
+
+- **GET /api/trips/read_participants?id=TRIP_ID**
+  - Request: JWT in Authorization header, trip_id as query param
+  - Response: List of participants (participant_id, user_id, user_name, user_email, status)
+  - Only registered users are included
+
+- **POST /api/trips/invite**
+  - Request: JSON body with jwt, trip_id, email
+  - Response: Success or error message
+  - Both admin and co-admin can invite, and only registered users can be invited
+
+- **POST /api/trips/delete_participant**
+  - Request: JSON body with jwt, participant_id
+  - Response: Success or error message
+  - Only admin can remove participants (not themselves)
+
+- **POST /api/trips/set_coadmin**
+  - Request: JSON body with jwt, trip_id, user_id
+  - Response: Success or error message
+  - Only admin can set or change the co-admin
 
 ### [backend/composer.lock](/golocal_backend/composer.lock)
 
@@ -114,8 +150,6 @@ Don't commit these on git
 ### [backend/api/trips/](/golocal_backend/api/trips/)
 
 ### [backend/api/trip/update.php](/golocal_backend/api/trips/update.php)
-
-### [backend/api/trips/update_participants.php](/golocal_backend/api/trips/update_participant.php)
 
 ### [backend/api/trips/read.php](/golocal_backend/api/trips/read.php)
 

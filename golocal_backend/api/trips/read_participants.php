@@ -28,24 +28,26 @@ if ($jwt) {
         $database = new Database();
         $db = $database->getConnection();
 
-        // Prepare the query to get all participants for a given trip
+        // Prepare the query to get all participants for a given trip, including user name and email
         $query = "SELECT
             tp.participant_id,
             tp.user_id,
-            tp.guest_name,
-            tp.guest_email,
+            u.username as user_name,
+            u.email as user_email,
             tp.status
         FROM
             trip_participants tp
+        JOIN
+            users u ON tp.user_id = u.user_id
         WHERE
             tp.trip_id = :trip_id";
-        
+
         $stmt = $db->prepare($query);
-        
+
         // Sanitize and bind the trip ID
         $trip_id = htmlspecialchars(strip_tags($trip_id));
         $stmt->bindParam(':trip_id', $trip_id);
-        
+
         $stmt->execute();
         $num = $stmt->rowCount();
 
@@ -54,13 +56,12 @@ if ($jwt) {
             $participants_arr["records"] = array();
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                extract($row);
                 $participant_item = array(
-                    "participant_id" => $participant_id,
-                    "user_id" => $user_id,
-                    "guest_name" => $guest_name,
-                    "guest_email" => $guest_email,
-                    "status" => $status
+                    "participant_id" => $row["participant_id"],
+                    "user_id" => $row["user_id"],
+                    "user_name" => $row["user_name"],
+                    "user_email" => $row["user_email"],
+                    "status" => $row["status"]
                 );
                 array_push($participants_arr["records"], $participant_item);
             }
