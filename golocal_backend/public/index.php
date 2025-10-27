@@ -19,6 +19,10 @@ include_once __DIR__ . '/../config/database.php';
 include_once __DIR__ . '/../config/core.php'; // This defines $secret_key
 include_once __DIR__ . '/../core/user.php';
 include_once __DIR__ . '/../core/trip.php';
+include_once __DIR__ . '/../core/user.php';
+include_once __DIR__ . '/../core/trip.php';
+include_once __DIR__ . '/../core/checklist.php';
+
 // Add other core models here as you create them
 // include_once __DIR__ . '/../core/photo.php';
 

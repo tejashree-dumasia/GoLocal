@@ -6,81 +6,153 @@
     <title>GoLocal - Trip Details</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        /* Optional: Add styles for completed items */
+        .checklist-item-completed label {
+            text-decoration: line-through;
+            color: #6c757d; /* Bootstrap muted color */
+        }
+    </style>
 </head>
 <body ng-controller="TripDetailController">
+
 <div class="container mt-5">
-    <div id="trip-details-container">
-        <h2>{{ trip.trip_name || 'Loading Trip...' }}</h2>
+
+    <div class="alert alert-danger" ng-show="errorMsg">{{ errorMsg }}</div>
+
+    <div id="trip-details-container" ng-show="trip.trip_id">
+        <h2>{{ trip.trip_name }}</h2>
         <p class="text-muted">{{ trip.location }}</p>
         <hr>
         <p>{{ trip.description }}</p>
         <div class="row">
             <div class="col-md-6">
-                <strong>Starts:</strong> <span>{{ trip.start_datetime && (trip.start_datetime | date:'medium') }}</span>
+                <strong>Starts:</strong> <span>{{ trip.start_datetime | date:'medium' }}</span>
             </div>
             <div class="col-md-6">
-                <strong>Ends:</strong> <span>{{ trip.end_datetime && (trip.end_datetime | date:'medium') }}</span>
+                <strong>Ends:</strong> <span>{{ trip.end_datetime | date:'medium' }}</span>
             </div>
             <div class="col-md-6 mt-2">
                 <strong>Estimated Cost:</strong> ₹<span>{{ trip.estimated_cost || 'N/A' }}</span>
             </div>
         </div>
     </div>
+    <div ng-hide="trip.trip_id || errorMsg">Loading Trip Details...</div>
+
     <div class="mt-5">
         <h4>Participants</h4>
         <ul class="list-group">
-            <li class="list-group-item" ng-repeat="participant in participants">
-                {{ getParticipantName(participant) }} <small class="text-muted">({{ participant.status }})</small>
-                <span ng-if="participant.user_id == adminId" class="badge badge-primary ml-2">Admin</span>
-                <span ng-if="participant.user_id == coAdminId && participant.user_id != adminId" class="badge badge-info ml-2">Co-Admin</span>
-                <br>
-                <button ng-if="canShowMakeCoAdmin(participant)" class="btn btn-sm btn-outline-secondary ml-2" ng-click="makeCoAdmin(participant.user_id)">Make Co-Admin</button>
-                <button ng-if="canShowDelete(participant)" class="btn btn-sm btn-outline-danger ml-2" ng-click="deleteParticipant(participant.participant_id)">Delete</button>
+            <li class="list-group-item" ng-repeat="p in participants">
+                {{ getParticipantDisplayName(p) }} <small class="text-muted">({{ p.status }})</small>
+                <button ng-if="isAdmin && p.participant_id !== getOwnParticipantId()"
+                        class="btn btn-sm btn-outline-danger float-right"
+                        ng-click="deleteParticipant(p.participant_id)">
+                    Delete
+                </button>
             </li>
-            <li class="list-group-item" ng-if="participants.length === 0">No participants have been added yet.</li>
+            <li class="list-group-item" ng-if="!participants.length">No participants yet.</li>
         </ul>
     </div>
-    <div class="card mt-4" ng-show="isAdmin">
+
+    <div class="card mt-4">
         <div class="card-header">
-            <h5>Add Participant</h5>
+            <h5>Trip Checklist 📝</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item" ng-repeat="item in checklist" ng-class="{'checklist-item-completed': item.is_completed}">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" ng-model="item.is_completed" ng-change="updateChecklistItem(item)" id="item-{{item.item_id}}">
+                        <label class="form-check-label" for="item-{{item.item_id}}">
+                            {{ item.item_description }}
+                            <small class="text-muted d-block">Added by {{ item.created_by_username || 'a user' }}</small>
+                        </label>
+                        <button ng-if="isAdmin || item.created_by_user_id == currentUserId"
+                                class="btn btn-sm btn-outline-danger float-right"
+                                ng-click="deleteChecklistItem(item.item_id)">
+                            &times; </button>
+                    </div>
+                </li>
+                <li class="list-group-item" ng-if="!checklist.length">No checklist items added yet.</li>
+            </ul>
+            <form ng-submit="addChecklistItem()" class="input-group mt-3">
+                <input type="text" class="form-control" ng-model="newItemDescription" placeholder="Add a new item (e.g., Water Bottles)" required>
+                <div class="input-group-append">
+                    <button class="btn btn-outline-primary" type="submit">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="add-participant-section" class="card mt-4" ng-show="isAdmin">
+        <div class="card-header">
+            <h5>Add Participants</h5>
         </div>
         <div class="card-body">
             <form ng-submit="inviteParticipant()">
-                <p>Invite a participant by their registered GoLocal email address.</p>
+                <p>Invite friends with a GoLocal account, or add anyone by email or name for planning.</p>
                 <div class="form-group">
-                    <label for="participant-email">Participant's Email</label>
-                    <input type="email" class="form-control" id="participant-email" ng-model="inviteEmail" placeholder="friend@example.com" required>
+                    <label for="participant-email">Participant's Email (optional)</label>
+                    <input type="email" class="form-control" id="participant-email" ng-model="inviteEmail" placeholder="friend@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="participant-name">Participant's Name</label>
+                    <input type="text" class="form-control" id="participant-name" ng-model="inviteName" placeholder="e.g., Arun from Pune">
                 </div>
                 <button type="submit" class="btn btn-primary">Add to Trip</button>
             </form>
-            <div class="mt-3" ng-if="inviteResponse">
-                <div class="alert alert-info">{{ inviteResponse }}</div>
-            </div>
+            <div id="invite-response" class="mt-3 alert" ng-class="inviteSuccess ? 'alert-success' : 'alert-danger'" ng-show="inviteResponseMessage">{{ inviteResponseMessage }}</div>
         </div>
     </div>
-    <div class="alert alert-danger mt-4" ng-show="errorMsg">{{ errorMsg }}</div>
-</div>
-<script>
+
+</div> <script>
 angular.module('GoLocalApp', [])
-.controller('TripDetailController', function($scope, $http) {
+.controller('TripDetailController', function($scope, $http, $timeout) {
+    // --- SETUP ---
     $scope.jwt = localStorage.getItem('jwt');
     var urlParams = new URLSearchParams(window.location.search);
     $scope.tripId = urlParams.get('id');
     $scope.isAdmin = false;
+    $scope.currentUserId = null;
     $scope.trip = {};
     $scope.participants = [];
+    $scope.checklist = [];
     $scope.errorMsg = '';
     $scope.inviteEmail = '';
-    $scope.inviteResponse = '';
-    var apiBase = 'http://api.golocal.test/api/trips/';
+    $scope.inviteName = '';
+    $scope.inviteResponseMessage = '';
+    $scope.inviteSuccess = false;
+    $scope.newItemDescription = '';
+
+    // API Base URL - Make sure this points to your backend
+    var apiBase = 'http://api.golocal.test/api/trips/'; // Adjust if needed
+
+    // Helper to decode JWT and get user ID
+    function getUserIdFromJwt(token) {
+        try {
+             var base64Url = token.split('.')[1];
+             var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+             var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+             }).join(''));
+             return JSON.parse(jsonPayload).data.id; }
+        catch (e) { return null; }
+    }
+
     if (!$scope.jwt || !$scope.tripId) {
         $scope.errorMsg = 'Access Denied or invalid trip ID.';
         return;
     }
-    $scope.showError = function(message) {
-        $scope.errorMsg = message;
-        setTimeout(function() { $scope.$apply(function() { $scope.errorMsg = ''; }); }, 2000);
-    };
+    $scope.currentUserId = getUserIdFromJwt($scope.jwt);
+
+    // Function to display temporary messages (e.g., for invites)
+    function showTempMessage(isSuccess, message) {
+        $scope.inviteSuccess = isSuccess;
+        $scope.inviteResponseMessage = message;
+        $timeout(function() { $scope.inviteResponseMessage = ''; }, 3000);
+    }
+
+    // --- FETCH FUNCTIONS ---
     $scope.fetchTripDetails = function() {
         $http({
             method: 'GET',
@@ -88,15 +160,16 @@ angular.module('GoLocalApp', [])
             headers: { 'Authorization': 'Bearer ' + $scope.jwt }
         }).then(function(response) {
             $scope.trip = response.data;
+            // Use strict comparison for boolean received from PHP/JSON
             $scope.isAdmin = ($scope.trip.is_admin === true || $scope.trip.is_admin === 1 || $scope.trip.is_admin === '1');
-            $scope.adminId = $scope.trip.admin_id;
-            $scope.coAdminId = $scope.trip.co_admin_id;
+            // Fetch related data after getting trip details
             $scope.fetchParticipants();
+            $scope.fetchChecklist();
         }, function(error) {
-            var errorMsg = error.data && error.data.message ? error.data.message : 'Could not load trip details.';
-            $scope.showError(errorMsg);
+            $scope.errorMsg = (error.data && error.data.message) || 'Could not load trip details.';
         });
     };
+
     $scope.fetchParticipants = function() {
         $http({
             method: 'GET',
@@ -105,25 +178,48 @@ angular.module('GoLocalApp', [])
         }).then(function(response) {
             $scope.participants = response.data.records || [];
         }, function(error) {
-            var errorMsg = error.data && error.data.message ? error.data.message : 'Could not load participants.';
-            $scope.showError(errorMsg);
+            console.error("Could not load participants:", (error.data && error.data.message) || error.statusText);
+            // Optionally set an error message: $scope.errorMsg = 'Could not load participants.'
         });
     };
-    $scope.makeCoAdmin = function(userId) {
-        if (!confirm('Are you sure you want to make this participant the co-admin?')) return;
+
+    $scope.fetchChecklist = function() {
+        $http({
+            method: 'GET',
+            url: apiBase + 'checklist_read?id=' + $scope.tripId,
+            headers: { 'Authorization': 'Bearer ' + $scope.jwt }
+        }).then(function(response) {
+            $scope.checklist = response.data.records || [];
+            // Convert is_completed from 1/0 to true/false for checkbox ng-model
+            angular.forEach($scope.checklist, function(item) {
+                item.is_completed = !!item.is_completed; // Use !! to cast to boolean
+            });
+        }, function(error) {
+            console.error("Could not load checklist:", (error.data && error.data.message) || error.statusText);
+        });
+    };
+
+    // --- ACTION FUNCTIONS ---
+    $scope.inviteParticipant = function() {
+        if (!$scope.inviteEmail && !$scope.inviteName) {
+            showTempMessage(false, 'Please enter at least an email or a name.');
+            return;
+        }
         $http({
             method: 'POST',
-            url: apiBase + 'set_coadmin',
-            data: { jwt: $scope.jwt, trip_id: $scope.tripId, user_id: userId },
+            url: apiBase + 'invite',
+            data: { jwt: $scope.jwt, trip_id: $scope.tripId, email: $scope.inviteEmail, name: $scope.inviteName },
             headers: { 'Content-Type': 'application/json' }
         }).then(function(response) {
-            $scope.showError(response.data.message);
-            $scope.fetchTripDetails();
+            showTempMessage(true, response.data.message);
+            $scope.inviteEmail = ''; // Clear form
+            $scope.inviteName = '';  // Clear form
+            $scope.fetchParticipants(); // Refresh list
         }, function(error) {
-            var errorMsg = error.data && error.data.message ? error.data.message : 'Could not set co-admin.';
-            $scope.showError(errorMsg);
+            showTempMessage(false, (error.data && error.data.message) || 'Could not invite participant.');
         });
     };
+
     $scope.deleteParticipant = function(participantId) {
         if (!confirm('Are you sure you want to remove this participant?')) return;
         $http({
@@ -132,51 +228,80 @@ angular.module('GoLocalApp', [])
             data: { jwt: $scope.jwt, participant_id: participantId },
             headers: { 'Content-Type': 'application/json' }
         }).then(function(response) {
-            $scope.showError(response.data.message);
-            $scope.fetchParticipants();
+            // Use showTempMessage for consistency, or just alert
+            alert(response.data.message);
+            $scope.fetchParticipants(); // Refresh list
         }, function(error) {
-            var errorMsg = error.data && error.data.message ? error.data.message : 'Could not remove participant.';
-            $scope.showError(errorMsg);
+            alert((error.data && error.data.message) || 'Could not remove participant.');
         });
     };
-    $scope.inviteParticipant = function() {
-        if (!$scope.inviteEmail) return;
+
+    $scope.addChecklistItem = function() {
+        if (!$scope.newItemDescription) return;
         $http({
             method: 'POST',
-            url: apiBase + 'invite',
-            data: { jwt: $scope.jwt, trip_id: $scope.tripId, email: $scope.inviteEmail },
+            url: apiBase + 'checklist_create',
+            data: { jwt: $scope.jwt, trip_id: $scope.tripId, item_description: $scope.newItemDescription },
             headers: { 'Content-Type': 'application/json' }
         }).then(function(response) {
-            $scope.inviteResponse = response.data.message;
-            $scope.inviteEmail = '';
-            $scope.fetchParticipants();
+            $scope.newItemDescription = ''; // Clear input
+            $scope.fetchChecklist(); // Refresh list
         }, function(error) {
-            var errorMsg = error.data && error.data.message ? error.data.message : 'An error occurred.';
-            $scope.inviteResponse = errorMsg;
-            $scope.showError(errorMsg);
+            alert((error.data && error.data.message) || 'Could not add item.');
         });
     };
-    $scope.getCurrentUserId = function() {
-        try {
-            var payload = JSON.parse(atob($scope.jwt.split('.')[1]));
-            return payload.data && payload.data.id ? payload.data.id : null;
-        } catch (e) { return null; }
+
+    $scope.updateChecklistItem = function(item) {
+        // The ng-model already updated item.is_completed to true/false
+        $http({
+            method: 'POST',
+            url: apiBase + 'checklist_update',
+            data: { jwt: $scope.jwt, item_id: item.item_id, is_completed: item.is_completed },
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(response) {
+            // Success - item state is already updated visually by ng-model
+            // Can optionally call $scope.fetchChecklist() if backend modifies data
+        }, function(error) {
+            alert((error.data && error.data.message) || 'Could not update item.');
+            // Revert checkbox state visually on error
+            item.is_completed = !item.is_completed;
+        });
     };
-    $scope.isAdminUser = function() {
-        return $scope.adminId == $scope.getCurrentUserId();
+
+    $scope.deleteChecklistItem = function(itemId) {
+        if (!confirm('Are you sure you want to delete this checklist item?')) return;
+        $http({
+            method: 'POST',
+            url: apiBase + 'checklist_delete',
+            data: { jwt: $scope.jwt, item_id: itemId },
+            headers: { 'Content-Type': 'application/json' }
+        }).then(function(response) {
+            $scope.fetchChecklist(); // Refresh list
+        }, function(error) {
+            alert((error.data && error.data.message) || 'Could not delete item.');
+        });
     };
-    $scope.canShowMakeCoAdmin = function(participant) {
-        return $scope.isAdmin && $scope.isAdminUser() && participant.user_id != $scope.adminId && participant.user_id != $scope.coAdminId;
+
+    // Helper function for displaying participant name/email/ID
+    $scope.getParticipantDisplayName = function(p) {
+        return p.guest_name || p.guest_email || ('User ID: ' + p.user_id);
     };
-    $scope.canShowDelete = function(participant) {
-        return $scope.isAdmin && participant.user_id != $scope.adminId;
+
+    // Helper to find own participant ID (needed to prevent self-deletion UI)
+    $scope.getOwnParticipantId = function() {
+        for(var i = 0; i < $scope.participants.length; i++) {
+            if($scope.participants[i].user_id == $scope.currentUserId) {
+                return $scope.participants[i].participant_id;
+            }
+        }
+        return null; // Return null if the current user isn't found in participants list
     };
-    $scope.getParticipantName = function(participant) {
-        return participant.user_name || participant.user_email || (participant.user_id ? 'User ID: ' + participant.user_id : 'Unknown User');
-    };
-    // Initial load
+
+    // --- INITIAL LOAD ---
+    // Fetch trip details first, which then triggers fetching participa         nts and checklist
     $scope.fetchTripDetails();
 });
 </script>
+
 </body>
 </html>
