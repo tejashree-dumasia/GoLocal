@@ -1,10 +1,9 @@
 <?php
 // This file is called by `public/index.php`, which handles core includes.
-// We need to use the JWT library.
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-// Get the posted data and request headers
+// Get request headers
 $headers = apache_request_headers();
 $jwt = null;
 
@@ -19,23 +18,21 @@ if (isset($headers['Authorization'])) {
 // Check if JWT is not null
 if ($jwt) {
     try {
+        // $secret_key is loaded from config/core.php in index.php
         $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
         
-        // JWT is valid, now get user data from the database
-        // The user ID is inside the 'data' part of the decoded token
+        // JWT is valid, get the user ID
         $user_id = $decoded->data->id;
 
         // Get database connection
         $database = new Database();
         $db = $database->getConnection();
 
-        // Instantiate a user object
-        $user = new User($db);
-
         // --- FETCH USER DATA ---
-        // We can create a simple readOne method in the User class
-        // For now, we'll do a direct query for simplicity
-        $query = "SELECT user_id, username, email FROM users WHERE user_id = :user_id LIMIT 0,1";
+        // Updated query to include profile_picture_url
+        $query = "SELECT user_id, username, email, profile_picture_url 
+                  FROM users 
+                  WHERE user_id = :user_id LIMIT 0,1";
         
         $stmt = $db->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
@@ -43,6 +40,12 @@ if ($jwt) {
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // --- Convert relative path to full URL ---
+            if ($row['profile_picture_url']) {
+                // Update this URL if your virtual host is different
+                $row['profile_picture_url'] = 'http://api.golocal.test/' . $row['profile_picture_url'];
+            }
 
             // Set response code - 200 OK
             http_response_code(200);
@@ -55,7 +58,6 @@ if ($jwt) {
 
     } catch (Exception $e) {
         // This will happen if the token is expired or invalid
-        // Set response code - 401 Unauthorized
         http_response_code(401);
         echo json_encode(array(
             "message" => "Access denied.",
@@ -64,7 +66,6 @@ if ($jwt) {
     }
 } else {
     // If no JWT was provided
-    // Set response code - 401 Unauthorized
     http_response_code(401);
     echo json_encode(array("message" => "Access denied. No token provided."));
 }
