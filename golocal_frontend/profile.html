@@ -9,87 +9,166 @@
         .container { max-width: 600px; }
         .profile-card { padding: 2rem; }
         .error-message { text-align: center; }
+        .action-buttons button { margin-right: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container mt-5">
+    <!-- Profile Display Card -->
     <div id="profile-view" class="card profile-card" style="display: none;">
         <h2 class="card-title mb-4">My Profile</h2>
         <dl class="row">
             <dt class="col-sm-3">User ID:</dt>
             <dd class="col-sm-9" id="user-id"></dd>
-
             <dt class="col-sm-3">Username:</dt>
             <dd class="col-sm-9" id="user-username"></dd>
-
             <dt class="col-sm-3">Email:</dt>
             <dd class="col-sm-9" id="user-email"></dd>
         </dl>
-        <button id="logout-button" class="btn btn-danger mt-3">Logout</button>
+        <div class="action-buttons mt-4">
+            <button id="edit-profile-btn" class="btn btn-info" data-toggle="modal" data-target="#editProfileModal">Edit Username</button>
+            <button id="delete-account-btn" class="btn btn-danger">Delete Account</button>
+            <button id="logout-button" class="btn btn-secondary float-right">Logout</button>
+        </div>
+        <div id="action-response" class="alert mt-3" style="display: none;"></div>
     </div>
 
+    <!-- Error View -->
     <div id="error-view" class="alert alert-danger error-message" style="display: none;">
         <h4>Access Denied</h4>
         <p>You must be logged in to view this page. Please <a href="login-test.html">login here</a>.</p>
     </div>
 </div>
 
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-profile-form">
+                    <div class="form-group">
+                        <label for="edit-username">New Username</label>
+                        <input type="text" class="form-control" id="edit-username" required>
+                    </div>
+                </form>
+                <div id="edit-response" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery, Popper, Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
 $(document).ready(function() {
-    // API endpoint to fetch user profile
-    var apiUrl = 'http://api.golocal.test/api/users/read_single';
+    // API Endpoints
+    var readApiUrl = 'http://api.golocal.test/api/users/read_single';
+    var updateApiUrl = 'http://api.golocal.test/api/users/update';
+    var deleteApiUrl = 'http://api.golocal.test/api/users/delete';
 
-    // 1. Get the JWT from localStorage
     var jwt = localStorage.getItem('jwt');
+    var currentUser = null;
 
     if (!jwt) {
-        // If no JWT is found, show the error message and hide the profile
         $('#error-view').show();
         $('#profile-view').hide();
-        return; // Stop the script
+        return;
     }
 
-    // 2. Make an authenticated AJAX request
-    $.ajax({
-        url: apiUrl,
-        type: 'GET',
-        beforeSend: function(xhr) {
-            // Add the JWT to the request header
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
-        },
-
-        // --- SUCCESS HANDLER ---
-        success: function(response) {
-            // Populate the profile card with user data
-            $('#user-id').text(response.user_id);
-            $('#user-username').text(response.username);
-            $('#user-email').text(response.email);
-
-            // Show the profile card
-            $('#profile-view').show();
-            $('#error-view').hide();
-        },
-
-        // --- ERROR HANDLER ---
-        error: function(jqXHR, textStatus, errorThrown) {
-            // Hide the profile card
-            $('#profile-view').hide();
-            // Show the error view with a specific message if available
-            var errorMsg = 'You must be logged in to view this page. Please <a href="login-test.html">login here</a>.';
-            if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
-                errorMsg = jqXHR.responseJSON.message;
+    function fetchUserProfile() {
+        $.ajax({
+            url: readApiUrl,
+            type: 'GET',
+            beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + jwt); },
+            success: function(response) {
+                currentUser = response; // Store current user data
+                $('#user-id').text(currentUser.user_id);
+                $('#user-username').text(currentUser.username);
+                $('#user-email').text(currentUser.email);
+                $('#edit-username').val(currentUser.username); // Pre-fill edit form
+                $('#profile-view').show();
+                $('#error-view').hide();
+            },
+            error: function(jqXHR) {
+                $('#profile-view').hide();
+                var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Could not load profile.';
+                $('#error-view').html('<h4>Access Denied</h4><p>' + errorMsg + '</p>').show();
             }
-            $('#error-view').html('<h4>Access Denied</h4><p>' + errorMsg + '</p>').show();
+        });
+    }
+
+    // --- Event Listeners ---
+
+    // Save Profile Changes
+    $('#save-profile-btn').on('click', function() {
+        var newUsername = $('#edit-username').val();
+        if (!newUsername || newUsername === currentUser.username) {
+            $('#edit-response').html('<div class="alert alert-warning">Username is unchanged or empty.</div>').show();
+            return;
         }
+
+        $.ajax({
+            url: updateApiUrl,
+            type: 'POST', // Or PUT, but POST is easier with simple JSON
+            contentType: 'application/json',
+            data: JSON.stringify({ jwt: jwt, username: newUsername }),
+            success: function(response) {
+                $('#edit-response').html('<div class="alert alert-success">' + response.message + '</div>').show();
+                fetchUserProfile(); // Refresh profile data
+                setTimeout(function(){ $('#editProfileModal').modal('hide'); $('#edit-response').hide(); }, 2000);
+            },
+            error: function(jqXHR) {
+                var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Could not update profile.';
+                $('#edit-response').html('<div class="alert alert-danger">' + errorMsg + '</div>').show();
+            }
+        });
     });
 
-    // Handle logout
+    // Delete Account
+    $('#delete-account-btn').on('click', function() {
+        if (!confirm('Are you ABSOLUTELY sure you want to delete your account? This action cannot be undone.')) {
+            return;
+        }
+
+        $.ajax({
+            url: deleteApiUrl,
+            type: 'POST', // Or DELETE
+            contentType: 'application/json',
+            data: JSON.stringify({ jwt: jwt }),
+            success: function(response) {
+                localStorage.removeItem('jwt'); // Log out
+                $('#action-response').removeClass('alert-danger').addClass('alert-success').text(response.message + ' Redirecting...').show();
+                setTimeout(function(){ window.location.href = 'login-test.html'; }, 2000);
+            },
+            error: function(jqXHR) {
+                var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Could not delete account.';
+                $('#action-response').removeClass('alert-success').addClass('alert-danger').text(errorMsg).show();
+            }
+        });
+    });
+
+    // Logout
     $('#logout-button').on('click', function() {
         localStorage.removeItem('jwt');
         window.location.href = 'login-test.html';
     });
+
+    // --- Initial Load ---
+    fetchUserProfile();
 });
 </script>
 

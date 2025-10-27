@@ -105,4 +105,47 @@ class User {
     
         return false; // Email not found
     }
+function update() {
+        // NOTE: We only allow updating username for now. Email updates are complex.
+        // Password updates should ideally be a separate process.
+        $query = "UPDATE " . $this->table_name . "
+                  SET username = :username
+                  WHERE user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitize
+        $this->username = htmlspecialchars(strip_tags($this->username));
+        $this->user_id = htmlspecialchars(strip_tags($this->user_id));
+
+        // Bind the new username and the user ID
+        $stmt->bindParam(':username', $this->username);
+        $stmt->bindParam(':user_id', $this->user_id);
+
+        // Execute the query
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+function delete() {
+        // Query to delete the user
+        // NOTE: Depending on your database foreign key setup, you might need
+        // to handle deleting related data (trips, photos) first or set up CASCADE rules.
+        $query = "DELETE FROM " . $this->table_name . " WHERE user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        // Sanitize
+        $this->user_id = htmlspecialchars(strip_tags($this->user_id));
+
+        // Bind the user ID
+        $stmt->bindParam(':user_id', $this->user_id);
+
+        // Execute the query
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
 }
