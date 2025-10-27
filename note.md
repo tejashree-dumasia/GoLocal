@@ -6,9 +6,9 @@
 
     ```xml
     <VirtualHost *:80>
-        DocumentRoot "path\to\GoLocal\golocal-backend"
-        ServerName api.golocal.local
-        <Directory "path\to\GoLocal\golocal-backend">
+        DocumentRoot "path\to\GoLocal\golocal-backend\public"
+        ServerName api.golocal.test
+        <Directory "path\to\GoLocal\golocal-backend\public">
             AllowOverride All
             Require all granted
         </Directory>
@@ -22,7 +22,7 @@
 
 3. Add entry to systems hosts file `C:\Windows\System32\drivers\etc\hosts`
 
-    `127.0.0.1 api.golocal.local`
+    `127.0.0.1 api.golocal.test`
 
 ## which file, what do
 
