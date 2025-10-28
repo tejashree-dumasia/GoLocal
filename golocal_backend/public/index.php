@@ -19,8 +19,6 @@ include_once __DIR__ . '/../config/database.php';
 include_once __DIR__ . '/../config/core.php'; // This defines $secret_key
 include_once __DIR__ . '/../core/user.php';
 include_once __DIR__ . '/../core/trip.php';
-include_once __DIR__ . '/../core/user.php';
-include_once __DIR__ . '/../core/trip.php';
 include_once __DIR__ . '/../core/checklist.php';
 
 // Add other core models here as you create them
@@ -29,6 +27,23 @@ include_once __DIR__ . '/../core/checklist.php';
 // #3 --- PARSE THE REQUEST URL ---
 // The URL is passed as a query parameter from .htaccess
 $url = isset($_GET['url']) ? $_GET['url'] : '';
+
+// If the URL isn't provided via rewrite (e.g. when using PHP built-in server),
+// derive it from the REQUEST_URI so routes like /api/users/register work.
+if (empty($url)) {
+    $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    // Remove the script name (e.g., /index.php) if present
+    $script_name = dirname($_SERVER['SCRIPT_NAME']); // typically '/'
+    // Normalize leading/trailing slashes
+    $path = '/' . ltrim(substr($request_uri, strlen($script_name)), '/');
+    // Trim leading slash
+    $path = ltrim($path, '/');
+    // Use this as the URL if it looks like an API path
+    if (!empty($path)) {
+        $url = $path;
+    }
+}
+
 $url_parts = explode('/', filter_var(rtrim($url, '/'), FILTER_SANITIZE_URL));
 
 // #4 --- ROUTING LOGIC ---

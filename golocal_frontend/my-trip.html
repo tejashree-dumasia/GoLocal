@@ -59,9 +59,9 @@ function getUserIdFromJwt(token) {
 }
 
 $(document).ready(function() {
-    var readApiUrl = 'http://api.golocal.test/api/trips/read';
+    var readApiUrl = 'http://127.0.0.1:8000/api/trips/read';
     // --- NEW API URL ---
-    var deleteApiUrl = 'http://api.golocal.test/api/trips/delete';
+    var deleteApiUrl = 'http://127.0.0.1:8000/api/trips/delete';
     var jwt = localStorage.getItem('jwt');
 
     if (!jwt) {

@@ -44,7 +44,7 @@ if ($jwt) {
             // --- Convert relative path to full URL ---
             if ($row['profile_picture_url']) {
                 // Update this URL if your virtual host is different
-                $row['profile_picture_url'] = 'http://api.golocal.test/' . $row['profile_picture_url'];
+                $row['profile_picture_url'] = 'http://127.0.0.1:8000/' . $row['profile_picture_url'];
             }
 
             // Set response code - 200 OK

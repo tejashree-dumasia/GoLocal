@@ -93,10 +93,10 @@
 <script>
 $(document).ready(function() {
     // API Endpoints
-    var readApiUrl = 'http://api.golocal.test/api/users/read_single';
-    var updateApiUrl = 'http://api.golocal.test/api/users/update';
-    var deleteApiUrl = 'http://api.golocal.test/api/users/delete';
-    var uploadApiUrl = 'http://api.golocal.test/api/users/upload_profile'; // <-- NEW
+    var readApiUrl = 'http://127.0.0.1:8000/api/users/read_single';
+    var updateApiUrl = 'http://127.0.0.1:8000/api/users/update';
+    var deleteApiUrl = 'http://127.0.0.1:8000/api/users/delete';
+    var uploadApiUrl = 'http://127.0.0.1:8000/api/users/upload_profile'; // <-- NEW
 
     var jwt = localStorage.getItem('jwt');
     var currentUser = null;

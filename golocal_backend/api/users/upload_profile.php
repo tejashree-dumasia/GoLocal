@@ -64,7 +64,7 @@ try {
             http_response_code(200);
             echo json_encode(array(
                 "message" => "Profile picture uploaded.",
-                "filePath" => 'http://api.golocal.test/' . $relative_path
+                "filePath" => 'http://127.0.0.1:8000/' . $relative_path
             ));
         } else {
             http_response_code(503);
