@@ -21,3 +21,21 @@ This repository contains the full codebase for the GoLocal micro-adventure plann
 1. Ensure the backend API is running.
 2. Update the `apiUrl` variables in each `.html` file inside the `/frontend` directory to point to your backend's public URL.
 3. Open the `.html` files directly in your browser or serve them from a simple web server.
+
+## Running the Application
+
+1. On a terminal, navigate to the backend directory and start a simple server, Start your local server
+
+```bash
+cd golocal_backend/public
+
+php -S localhost:8000 -t .
+````
+
+2. On another terminal, navigate to the frontend directory and start a simple server:
+
+```bash
+cd golocal_frontend
+
+live-server --port=5500
+```
