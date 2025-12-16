@@ -1,0 +1,447 @@
+/* Trip Detail Specific Styles */
+
+/* Trip Header */
+.trip-header {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.trip-header-content {
+    flex: 1;
+}
+
+.trip-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.trip-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-bottom: 20px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gray-600);
+    font-size: 1rem;
+}
+
+.meta-item i {
+    color: var(--primary);
+}
+
+.trip-description {
+    color: var(--gray-700);
+    line-height: 1.7;
+    font-size: 1.05rem;
+}
+
+.trip-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Trip Tabs */
+.trip-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    background: var(--white);
+    padding: 10px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+
+.trip-tab {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    color: var(--gray-600);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trip-tab:hover {
+    background: var(--gray-100);
+    color: var(--primary);
+}
+
+.trip-tab.active {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: var(--white);
+}
+
+.tab-badge {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.trip-tab.active .tab-badge {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Tab Content */
+.trip-content {
+    min-height: 400px;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.panel-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-900);
+}
+
+.panel-header h3 i {
+    color: var(--primary);
+}
+
+/* Participants List */
+.participants-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.participant-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: var(--transition);
+}
+
+.participant-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.participant-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.participant-info {
+    flex: 1;
+}
+
+.participant-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+}
+
+.participant-email {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.participant-role {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.participant-role.admin {
+    background: #fed7d7;
+    color: #742a2a;
+}
+
+.participant-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.icon-btn:hover {
+    background: var(--gray-200);
+    color: var(--gray-900);
+}
+
+.icon-btn.danger:hover {
+    background: var(--danger);
+    color: var(--white);
+}
+
+/* Checklist */
+.checklist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.checklist-item {
+    background: var(--white);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: var(--transition);
+}
+
+.checklist-item:hover {
+    box-shadow: var(--shadow);
+}
+
+.checklist-item.completed {
+    opacity: 0.6;
+}
+
+.checklist-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--gray-400);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.checklist-checkbox:hover {
+    border-color: var(--primary);
+}
+
+.checklist-checkbox.checked {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--white);
+}
+
+.checklist-text {
+    flex: 1;
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.checklist-item.completed .checklist-text {
+    text-decoration: line-through;
+    color: var(--gray-500);
+}
+
+.checklist-delete {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--gray-400);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.checklist-delete:hover {
+    background: var(--danger);
+    color: var(--white);
+}
+
+/* Photos Grid */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.photo-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.photo-item:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow);
+}
+
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.photo-item:hover .photo-overlay {
+    opacity: 1;
+}
+
+.photo-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.photo-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--white);
+    color: var(--gray-800);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.photo-action-btn:hover {
+    transform: scale(1.1);
+}
+
+.photo-action-btn.delete {
+    background: var(--danger);
+    color: var(--white);
+}
+
+/* Photo Preview */
+.photo-preview {
+    margin-top: 20px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    max-height: 300px;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .trip-header {
+        flex-direction: column;
+        padding: 25px;
+    }
+
+    .trip-header h1 {
+        font-size: 2rem;
+    }
+
+    .trip-meta {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .trip-tabs {
+        overflow-x: auto;
+    }
+
+    .participants-list {
+        grid-template-columns: 1fr;
+    }
+
+    .photos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .trip-header-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .trip-header-actions .btn {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .trip-header {
+        padding: 20px;
+    }
+
+    .trip-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .photos-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

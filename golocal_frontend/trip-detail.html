@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Details - GoLocal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/trip-detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-page">
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container-fluid">
+            <div class="nav-brand">
+                <a href="dashboard.html" style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>GoLocal</span>
+                </a>
+            </div>
+            <div class="nav-actions">
+                <a href="dashboard.html" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <div class="user-menu">
+                    <button class="user-avatar" id="userMenuBtn">
+                        <img src="" alt="User" id="userAvatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-placeholder" style="display: none;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <a href="profile.html" class="dropdown-item">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="container-fluid">
+            <!-- Trip Header -->
+            <div class="trip-header">
+                <div class="trip-header-content">
+                    <h1 id="tripName">Loading...</h1>
+                    <div class="trip-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="tripLocation">-</span>
+                        </span>
+                        <span class="meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span id="tripDates">-</span>
+                        </span>
+                        <span class="meta-item">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span id="tripCost">-</span>
+                        </span>
+                    </div>
+                    <p class="trip-description" id="tripDescription">-</p>
+                </div>
+                <div class="trip-header-actions">
+                    <button class="btn btn-outline" id="inviteBtn">
+                        <i class="fas fa-user-plus"></i> Invite
+                    </button>
+                    <button class="btn btn-danger" id="deleteTripBtn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="trip-tabs">
+                <button class="trip-tab active" data-tab="overview">
+                    <i class="fas fa-info-circle"></i> Overview
+                </button>
+                <button class="trip-tab" data-tab="participants">
+                    <i class="fas fa-users"></i> Participants <span class="tab-badge" id="participantsBadge">0</span>
+                </button>
+                <button class="trip-tab" data-tab="checklist">
+                    <i class="fas fa-list-check"></i> Checklist <span class="tab-badge" id="checklistBadge">0</span>
+                </button>
+                <button class="trip-tab" data-tab="photos">
+                    <i class="fas fa-images"></i> Photos <span class="tab-badge" id="photosBadge">0</span>
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="trip-content">
+                <!-- Overview Tab -->
+                <div class="tab-panel active" id="overview">
+                    <div class="content-grid">
+                        <div class="content-card">
+                            <h3><i class="fas fa-info-circle"></i> Trip Information</h3>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">Status</span>
+                                    <span class="info-value">
+                                        <span class="status-badge" id="tripStatus">Upcoming</span>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Created By</span>
+                                    <span class="info-value" id="tripCreator">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Created On</span>
+                                    <span class="info-value" id="tripCreatedDate">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Duration</span>
+                                    <span class="info-value" id="tripDuration">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="content-card">
+                            <h3><i class="fas fa-chart-pie"></i> Quick Stats</h3>
+                            <div class="stats-list">
+                                <div class="stat-item">
+                                    <div class="stat-icon-small" style="background: #667eea;">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div>
+                                        <strong id="statsParticipants">0</strong>
+                                        <small>Participants</small>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon-small" style="background: #f093fb;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <strong id="statsChecklist">0</strong>
+                                        <small>Checklist Items</small>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-icon-small" style="background: #4facfe;">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                    <div>
+                                        <strong id="statsPhotos">0</strong>
+                                        <small>Photos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participants Tab -->
+                <div class="tab-panel" id="participants">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-users"></i> Trip Participants</h3>
+                    </div>
+                    <div class="participants-list" id="participantsList">
+                        <!-- Participants will be loaded here -->
+                    </div>
+                    <div class="empty-state" id="participantsEmpty" style="display: none;">
+                        <i class="fas fa-users"></i>
+                        <p>No participants yet. Invite friends to join!</p>
+                    </div>
+                </div>
+
+                <!-- Checklist Tab -->
+                <div class="tab-panel" id="checklist">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-list-check"></i> Trip Checklist</h3>
+                        <button class="btn btn-primary btn-sm" id="addChecklistBtn">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="checklist-list" id="checklistList">
+                        <!-- Checklist items will be loaded here -->
+                    </div>
+                    <div class="empty-state" id="checklistEmpty" style="display: none;">
+                        <i class="fas fa-list-check"></i>
+                        <p>No checklist items. Add essentials for your trip!</p>
+                    </div>
+                </div>
+
+                <!-- Photos Tab -->
+                <div class="tab-panel" id="photos">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-images"></i> Trip Photos</h3>
+                        <button class="btn btn-primary btn-sm" id="uploadPhotoBtn">
+                            <i class="fas fa-upload"></i> Upload Photo
+                        </button>
+                    </div>
+                    <div class="photos-grid" id="photosGrid">
+                        <!-- Photos will be loaded here -->
+                    </div>
+                    <div class="empty-state" id="photosEmpty" style="display: none;">
+                        <i class="fas fa-images"></i>
+                        <p>No photos yet. Capture and share your memories!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Invite Modal -->
+    <div class="modal" id="inviteModal">
+        <div class="modal-content">
+            <button class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2><i class="fas fa-user-plus"></i> Invite to Trip</h2>
+            <form id="inviteForm">
+                <div class="form-group">
+                    <label for="inviteEmail">Email Address</label>
+                    <input type="email" id="inviteEmail" class="form-control" placeholder="friend@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isCoAdmin"> Make co-admin
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('inviteModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Send Invite
+                    </button>
+                </div>
+            </form>
+            <div class="alert" id="inviteAlert" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Add Checklist Modal -->
+    <div class="modal" id="checklistModal">
+        <div class="modal-content">
+            <button class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2><i class="fas fa-list-check"></i> Add Checklist Item</h2>
+            <form id="checklistForm">
+                <div class="form-group">
+                    <label for="checklistItem">Item Name</label>
+                    <input type="text" id="checklistItem" class="form-control" placeholder="e.g., Sunscreen" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('checklistModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+            </form>
+            <div class="alert" id="checklistAlert" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Upload Photo Modal -->
+    <div class="modal" id="uploadPhotoModal">
+        <div class="modal-content">
+            <button class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2><i class="fas fa-upload"></i> Upload Photo</h2>
+            <form id="uploadPhotoForm">
+                <div class="form-group">
+                    <label for="photoFile">Select Photo</label>
+                    <input type="file" id="photoFile" class="form-control" accept="image/*" required>
+                    <small>Maximum file size: 5MB</small>
+                </div>
+                <div class="photo-preview" id="photoPreview" style="display: none;">
+                    <img src="" alt="Preview" id="previewImage">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('uploadPhotoModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text"><i class="fas fa-upload"></i> Upload</span>
+                        <span class="btn-loader" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+            </form>
+            <div class="alert" id="uploadAlert" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/trip-detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - GoLocal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-page">
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="container-fluid">
+            <div class="nav-brand">
+                <i class="fas fa-map-marked-alt"></i>
+                <span>GoLocal</span>
+            </div>
+            <div class="nav-actions">
+                <button class="btn btn-primary" id="createTripBtn">
+                    <i class="fas fa-plus"></i> New Trip
+                </button>
+                <div class="user-menu">
+                    <button class="user-avatar" id="userMenuBtn">
+                        <img src="" alt="User" id="userAvatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-placeholder" style="display: none;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <div class="dropdown-header">
+                            <div class="user-info">
+                                <strong id="dropdownUsername">User</strong>
+                                <small id="dropdownEmail">user@example.com</small>
+                            </div>
+                        </div>
+                        <a href="profile.html" class="dropdown-item">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h1>My Trips</h1>
+                    <p>Manage and organize your adventures</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalTrips">0</h3>
+                        <p>Total Trips</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="upcomingTrips">0</h3>
+                        <p>Upcoming</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalParticipants">0</h3>
+                        <p>Travel Buddies</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="totalPhotos">0</h3>
+                        <p>Memories</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <button class="tab-btn active" data-filter="all">
+                    <i class="fas fa-list"></i> All Trips
+                </button>
+                <button class="tab-btn" data-filter="upcoming">
+                    <i class="fas fa-calendar-alt"></i> Upcoming
+                </button>
+                <button class="tab-btn" data-filter="past">
+                    <i class="fas fa-history"></i> Past
+                </button>
+            </div>
+
+            <!-- Trips Grid -->
+            <div class="trips-grid" id="tripsGrid">
+                <!-- Trip cards will be loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-map-marked-alt"></i>
+                <h3>No Trips Yet</h3>
+                <p>Start planning your first adventure!</p>
+                <button class="btn btn-primary" onclick="document.getElementById('createTripBtn').click()">
+                    <i class="fas fa-plus"></i> Create Your First Trip
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading your trips...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Trip Modal -->
+    <div class="modal" id="createTripModal">
+        <div class="modal-content modal-large">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2><i class="fas fa-map-marked-alt"></i> Plan a New Trip</h2>
+            <form id="createTripForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tripName">Trip Name <span class="required">*</span></label>
+                        <input type="text" id="tripName" class="form-control" placeholder="Weekend trek to the hills" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location <span class="required">*</span></label>
+                        <input type="text" id="location" class="form-control" placeholder="Pune, Maharashtra" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" class="form-control" rows="3" placeholder="What are you planning?"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDatetime">Start Date & Time <span class="required">*</span></label>
+                        <input type="datetime-local" id="startDatetime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDatetime">End Date & Time <span class="required">*</span></label>
+                        <input type="datetime-local" id="endDatetime" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="estimatedCost">Estimated Cost (per person)</label>
+                    <input type="number" id="estimatedCost" class="form-control" placeholder="500" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('createTripModal').style.display='none'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text"><i class="fas fa-check"></i> Create Trip</span>
+                        <span class="btn-loader" style="display: none;"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+            </form>
+            <div class="alert" id="createTripAlert" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
