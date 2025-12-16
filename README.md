@@ -29,7 +29,7 @@ This repository contains the full codebase for the GoLocal micro-adventure plann
 ```bash
 cd golocal_backend/public
 
-php -S localhost:8000 -t .
+php -S 127.0.0.1:8000 -t .
 ````
 
 2. On another terminal, navigate to the frontend directory and start a simple server:
